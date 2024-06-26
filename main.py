@@ -38,6 +38,10 @@ if prompt := st.chat_input("質問やメッセージを入力してください"
         # メッセージをapiの形式に変換
         message = [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
 
+        message.append({"role": "system", "content": "以上の会話履歴から検索クエリを生成して。検索クエリのみ出力して"})
+
+        print(message)
+
         with st.chat_message("assistant"):
             # OpenAI APIを使用してアシスタントの応答を取得
             stream = client.chat.completions.create(
@@ -51,7 +55,8 @@ if prompt := st.chat_input("質問やメッセージを入力してください"
         st.session_state.messages.append({"role": "assistant", "content": response})
     else:
         # 質問のリスト
-        questions = ["好きなジャンルは何ですか？", "出身地は？", "趣味は？", "好きな食べ物は？"]
+        questions = ["読みたい本のジャンルは何ですか(例:ミステリー、ファンタジー、SF、恋愛など)", "どの年代の本が読みたいですか(例:古典、現代、2020年に話題になった本など)", 
+                    "最近読んだ本で面白かった本はありますか", "好きな作家や興味のあるテーマはありますか"]
 
         # アシスタントメッセージを追加
         st.session_state.messages.append({"role": "assistant", "content": f"{questions[st.session_state.user_question_count - 1]}"})
