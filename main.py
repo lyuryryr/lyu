@@ -30,19 +30,19 @@ html, body, [class*="st"] {{
     background-position: center;
     background-repeat: no-repeat;
     background-attachment: fixed;
-    color: white;
+    color: black;
     font-size: 15px;  /* フォントサイズを大きく */
 }}
 
 [data-testid="stHeader"], [data-testid="stSidebar"], [data-testid="stToolbar"] {{
     background-color: rgba(0, 0, 0, 0.7) !important;  /* より不透明な背景色 */
-    color: white;
+    color: black;
     font-size: 25px;
 }}
 
 [data-testid="stMarkdownContainer"] p {{
     font-size: 15px;
-    color: white;
+    color: black;
 }}
 </style>
 """
@@ -106,7 +106,7 @@ def search_duckduckgo(query, num_results=5):
 
 # Streamlitアプリのタイトルを設定する
 st.markdown('<div class="main-content">', unsafe_allow_html=True)
-st.markdown('<h1 class="custom-title">レコメンドbook</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class="custom-title">おすすめの本紹介chatbot</h1>', unsafe_allow_html=True)
 
 # メッセージの初期化
 if "messages" not in st.session_state:
