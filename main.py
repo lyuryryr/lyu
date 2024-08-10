@@ -122,41 +122,65 @@ with st.container():  # ここで全体のコンテナを作成
 
 st.markdown('</div>', unsafe_allow_html=True)
 
-# ユーザーが新しいメッセージを入力できるテキストボックス
+# セッションステートの初期化
+if 'user_question_count' not in st.session_state:
+    st.session_state.user_question_count = 0
+
+if 'messages' not in st.session_state:
+    st.session_state.messages = []
+
+if 'book_recommendations' not in st.session_state:
+    st.session_state.book_recommendations = ""
+
+# 質問リストの設定
+questions = ["読みたい本のジャンルは何ですか(例:ミステリー、ファンタジー、SF、恋愛など)", 
+             "どの年代の本が読みたいですか(例:古典、現代、2020年に話題になった本など)", 
+             "最近読んだ本で面白かった本はありますか", 
+             "好きな作家や興味のあるテーマはありますか"]
+
+# ユーザーの入力を受け取る
 if prompt := st.chat_input("質問やメッセージを入力してください"):
     st.session_state.messages.append({"role": "user", "content": prompt})
-    st.session_state.user_question_count += 1  # 質問回数のカウントを増やす
     with st.chat_message("user"):
         st.markdown(prompt)
 
-    if st.session_state.user_question_count > 4:
-        if not st.session_state.query_generated:
+    # 質問が全て完了しているかチェック
+    if st.session_state.user_question_count < len(questions):
+        st.session_state.user_question_count += 1  # 質問回数のカウントを増やす
+        next_question = questions[st.session_state.user_question_count - 1]
+        st.session_state.messages.append({"role": "assistant", "content": next_question})
+        with st.chat_message("assistant"):
+            st.markdown(next_question)
+    else:
+        # ユーザーが追加の本を求めているかを判断
+        message = st.session_state.messages + [{"role": "system", "content": "これはユーザーがさらに本を推薦してほしいと考えているか、そうでないかを判断してください。ユーザーがもっと本を求めている場合は 'yes' と返し、そうでない場合は 'no' と返してください。"}]
+        
+        response = client.chat.completions.create(
+            model="gpt-4o",
+            messages=message,
+        )
+        
+        user_wants_more_books = response.choices[0].message.content.strip().lower() == 'yes'
+
+        # ユーザーが追加の本を求めていると判断された場合の処理
+        if user_wants_more_books:
+            st.session_state.book_recommendations = ""  # 以前の推薦をクリアして新しい推薦を生成する
+
+        if not st.session_state.book_recommendations:
+            # ここでAIモデルに本の推薦をリクエストするロジックに変更
             message = [{"role": m["role"], "content": m["content"]} for m in st.session_state.messages]
-            message.append({"role": "system", "content": "以上の会話履歴から検索クエリを生成して。検索クエリのみ出力して"})
+            message.append({"role": "system", "content": "ユーザーのリクエストに基づいて、具体的な本のタイトル、著者、あらすじを3冊推薦して。"})
             
             with st.chat_message("assistant"):
                 response = client.chat.completions.create(
                     model="gpt-4o",
                     messages=message,
                 )
-                query = response.choices[0].message.content
-                st.session_state.query_generated = True
-                st.session_state.search_query = query.strip()
+                recommendations = response.choices[0].message.content
+                st.session_state.book_recommendations = recommendations.strip()
 
-        results = search_duckduckgo(st.session_state.search_query)
-        
-        with st.chat_message("assistant"):
-            for result in results:
-                st.markdown(f"**Title**: {result['title']}")
-                st.markdown(f"**URL**: {result['href']}")
-                st.markdown(f"**Description**: {result['body']}")
+        # 推薦された本を一冊ずつ表示
+        for book in st.session_state.book_recommendations.split("\n\n"):
+            with st.chat_message("assistant"):
+                st.markdown(book)
                 st.markdown("---")
-    else:
-        questions = ["読みたい本のジャンルは何ですか(例:ミステリー、ファンタジー、SF、恋愛など)", 
-                     "どの年代の本が読みたいですか(例:古典、現代、2020年に話題になった本など)", 
-                     "最近読んだ本で面白かった本はありますか", 
-                     "好きな作家や興味のあるテーマはありますか"]
-
-        st.session_state.messages.append({"role": "assistant", "content": f"{questions[st.session_state.user_question_count - 1]}"})
-        with st.chat_message("assistant"):
-            st.markdown(questions[st.session_state.user_question_count - 1])
