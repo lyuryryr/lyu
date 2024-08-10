@@ -1,7 +1,6 @@
 import streamlit as st
 import base64
 
-
 def get_base64_of_bin_file(bin_file):
     with open(bin_file, 'rb') as f:
         data = f.read()
@@ -50,12 +49,47 @@ html, body, [class*="st"] {{
 
 st.markdown(page_bg_img, unsafe_allow_html=True)
 
-# Streamlitアプリのタイトルを設定する
-st.title("テストアプリ")
+# GIF画像のファイルパスを指定
+gif_image_path = "SkyBlock_items_enchanted_book.gif"  # ここにGIF画像のローカルファイルパスを指定
 
-st.write("背景画像がローカルファイルから設定されています。")
+# GIF画像をBase64にエンコード
+base64_gif = get_base64_of_bin_file(gif_image_path)
 
+# カスタムCSSでGIF画像を中央に配置し、位置を調整
+gif_display = f"""
+<style>
+.centered-gif {{
+    position: absolute;
+    top: -50px;  /* 位置を上に調整 */
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}}
 
+</style>
+
+<div class="centered-gif">
+    <img src="data:image/gif;base64,{base64_gif}" alt="centered gif">
+</div>
+"""
+
+st.markdown(gif_display, unsafe_allow_html=True)
+
+# ここからコンテンツを下にずらす
+st.markdown("""
+    <style>
+    .main-content {{
+        padding-top: 100px;  /* ここでコンテンツを100px下にずらす */
+    }}
+    .custom-title {{
+        position: relative;
+        top: 20px;  /* 追加でタイトルを下に調整 */
+        text-align: center;
+        font-size: 32px;
+        color: black;  /* タイトルの色を黒に設定 */
+    }}
+    </style>
+    """, unsafe_allow_html=True)
 
 # クライアントの初期化
 from openai import OpenAI
@@ -71,7 +105,8 @@ def search_duckduckgo(query, num_results=5):
     return results
 
 # Streamlitアプリのタイトルを設定する
-st.title("テスト")
+st.markdown('<div class="main-content">', unsafe_allow_html=True)
+st.markdown('<h1 class="custom-title">レコメンドbook</h1>', unsafe_allow_html=True)
 
 # メッセージの初期化
 if "messages" not in st.session_state:
@@ -80,9 +115,12 @@ if "messages" not in st.session_state:
     st.session_state.query_generated = False  # 検索クエリ生成フラグの初期化
 
 # これまでのメッセージを表示
-for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
-        st.markdown(message["content"])
+with st.container():  # ここで全体のコンテナを作成
+    for message in st.session_state.messages:
+        with st.chat_message(message["role"]):
+            st.markdown(message["content"])
+
+st.markdown('</div>', unsafe_allow_html=True)
 
 # ユーザーが新しいメッセージを入力できるテキストボックス
 if prompt := st.chat_input("質問やメッセージを入力してください"):
