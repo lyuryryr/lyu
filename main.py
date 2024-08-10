@@ -1,5 +1,6 @@
 import streamlit as st
 from openai import OpenAI
+import numpy as np
 
 # クライアントの初期化
 client = OpenAI()
