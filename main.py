@@ -41,7 +41,7 @@ html, body, [class*="st"] {{
 }}
 
 [data-testid="stMarkdownContainer"] p {{
-    font-size: 35px;
+    font-size: 15px;
     color: white;
 }}
 </style>
@@ -79,13 +79,13 @@ st.markdown(gif_display, unsafe_allow_html=True)
 st.markdown("""
     <style>
     .main-content {{
-        padding-top: 100px;  /* ここでコンテンツを100px下にずらす */
+        padding-top: 150px;  /* ここでコンテンツを150px下にずらす */
     }}
     .custom-title {{
         position: relative;
         top: 20px;  /* 追加でタイトルを下に調整 */
         text-align: center;
-        font-size: 32px;
+        font-size: 15px;  /* 文字サイズを大きく設定 */
         color: black;  /* タイトルの色を黒に設定 */
     }}
     </style>
