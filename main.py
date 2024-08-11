@@ -91,6 +91,7 @@ st.markdown("""
     </style>
     """, unsafe_allow_html=True)
 
+
 # クライアントの初期化
 from openai import OpenAI
 
