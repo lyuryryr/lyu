@@ -136,7 +136,7 @@ if 'book_recommendations' not in st.session_state:
 questions = ["読みたい本のジャンルは何ですか(例:ミステリー、ファンタジー、SF、恋愛など)", 
              "どの年代の本が読みたいですか(例:古典、現代、2020年に話題になった本など)", 
              "最近読んだ本で面白かった本はありますか", 
-             "好きな作家や興味のあるテーマはありますか"]
+             "日本の本と、海外の本どちらがいいですか"]
 
 # ユーザーの入力を受け取る
 if prompt := st.chat_input("質問やメッセージを入力してください"):
@@ -153,14 +153,20 @@ if prompt := st.chat_input("質問やメッセージを入力してください"
             st.markdown(next_question)
     else:
         # ユーザーが追加の本を求めているかを判断
-        message = st.session_state.messages + [{"role": "system", "content": "これはユーザーがさらに本を推薦してほしいと考えているか、そうでないかを判断してください。ユーザーがもっと本を求めている場合は 'yes' と返し、そうでない場合は 'no' と返してください。"}]
+        message = st.session_state.messages + [{"role": "system", "content": "ユーザーがさらに本を推薦してほしいかどうかを、'yes' または 'no' で答えてください。"}]
         
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=message,
         )
         
-        user_wants_more_books = response.choices[0].message.content.strip().lower() == 'yes'
+        # レスポンスをチェックし、柔軟に処理
+        user_response = response.choices[0].message.content.strip().lower()
+        
+        if "yes" in user_response or "もっと" in user_response or "出して" in user_response:
+            user_wants_more_books = True
+        else:
+            user_wants_more_books = False
 
         # ユーザーが追加の本を求めていると判断された場合の処理
         if user_wants_more_books:
